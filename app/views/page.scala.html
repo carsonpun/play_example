@@ -1,0 +1,64 @@
+@(message: String)
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+
+      var myWebSocket;
+      var jsondata;
+      function sendURL() {
+        var urlString = document.getElementById("inputURL").value
+        var jsontext = JSON.stringify({url: urlString})
+        myWebSocket.send(jsontext)
+      }
+      function connectToWS() {
+        var wsEndPoint = document.getElementById("wsEndPoint").value;
+        if (myWebSocket !== undefined) {
+          myWebSocket.close()
+        }
+        myWebSocket = new WebSocket(wsEndPoint);
+        myWebSocket.onmessage = function(event) {
+          console.log("got message from websocket");
+          jsondata = JSON.parse(event.data);
+
+          try {
+            var json = JSON.parse(event.data);
+            console.log("got it");
+            console.log(json)
+            document.getElementById("urlBox").value = json["url"]
+            document.getElementById("titleBox").value = json["title"]
+          } catch (e) {
+            console.log("error" + e)
+          }
+        };
+
+        myWebSocket.onopen = function() {
+          console.log("onopen.");
+        };
+
+        myWebSocket.onclose = function(evt) {
+          console.log("onclose." + evt);
+        };
+
+        myWebSocket.onerror = function(evt) {
+          console.log("Error!" + evt);
+        };
+      }
+    </script>
+  </head>
+  <body>
+    This is an example from https://github.com/carsonpun/play_example
+    <form>
+      <input title="" type="hidden" id="wsEndPoint" name="wsEndPoint" value="" class="wsEndPointBox" size="40" disabled><br>
+      <button type="button" onclick="sendURL()">get title</button>
+      <input title="" type="text" id="inputURL" name="inputURL" value="http://www.cnn.com" class="inputURL"><br>
+      reply url:   <input type="text" id="urlBox" name="urlBox" size="40" disabled><br>
+      reply title: <input type="text" id="titleBox" name="titleBox" size="40" disabled><br>
+    </form>
+  </body>
+  <script>
+    document.getElementById("wsEndPoint").value =
+      "ws://" + document.location.hostname + ":" + document.location.port + "/socket";
+    connectToWS();
+  </script>
+</html>

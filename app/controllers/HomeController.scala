@@ -3,19 +3,26 @@ package controllers
 import javax.inject._
 import play.api._
 import play.api.mvc._
-
+import akka.actor._
+import play.api.libs.json._
+import play.api.Play.current
+import akka.stream.Materializer
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
  */
 @Singleton
-class HomeController @Inject() extends Controller {
-  def getTitleTextFromURL(url: String): String = {
+class HomeController @Inject() (implicit val mat: Materializer) extends Controller {
+  def getTitleTextFromURL(url: String): Option[String] = {
     import org.htmlcleaner.HtmlCleaner
     import java.net.URL
-    val cleaner = new HtmlCleaner
-    val rootNode = cleaner.clean(new URL(url))
-    val titleStr = rootNode.getElementsByName("title", true)(0).getText.toString
+    val titleStr = try {
+      val cleaner = new HtmlCleaner
+      val rootNode = cleaner.clean(new URL(url))
+      Some(rootNode.getElementsByName("title", true)(0).getText.toString)
+    } catch {
+      case _ : Throwable => None
+    }
     titleStr
   }
   /**
@@ -25,8 +32,41 @@ class HomeController @Inject() extends Controller {
    * a path of `/`.
    */
   def index = Action {
-    //Ok(views.html.index("Your new application is ready."))
-    Ok(getTitleTextFromURL("http://www.cnn.com"))
+    Ok(views.html.index("Your new application is ready."))
   }
 
+  def page = Action {
+    Ok(views.html.page(""))
+  }
+
+  def socket = WebSocket.acceptWithActor[JsValue, JsValue] { request => out =>
+    MyActor.props(out)
+  }
+  object MyActor {
+    def props(out: ActorRef) = Props(new MyActor(out))
+  }
+  /**
+   * MyActor handles client/server side websocket communication
+   */
+  class MyActor(out: ActorRef) extends Actor {
+    override def receive: Receive = {
+      case message: JsValue => {
+        val url = (message \ "url").as[String]
+        val titleStr: String = getTitleTextFromURL(url).getOrElse("Invalid input URL!!")
+
+        case class Title(url: String,
+                         title: String)
+        implicit val titleWrites = new Writes[Title] {
+          def writes(title: Title) = Json.obj(
+            "url" -> title.url,
+            "title" -> title.title
+            )
+        }
+
+        out ! Json.toJson(Title(url, titleStr))
+      }
+
+      case _ => println("only support Json message.")
+    }
+  }
 }
