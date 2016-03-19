@@ -10,7 +10,14 @@ import play.api.mvc._
  */
 @Singleton
 class HomeController @Inject() extends Controller {
-
+  def getTitleTextFromURL(url: String): String = {
+    import org.htmlcleaner.HtmlCleaner
+    import java.net.URL
+    val cleaner = new HtmlCleaner
+    val rootNode = cleaner.clean(new URL(url))
+    val titleStr = rootNode.getElementsByName("title", true)(0).getText.toString
+    titleStr
+  }
   /**
    * Create an Action to render an HTML page with a welcome message.
    * The configuration in the `routes` file means that this method
@@ -18,7 +25,8 @@ class HomeController @Inject() extends Controller {
    * a path of `/`.
    */
   def index = Action {
-    Ok(views.html.index("Your new application is ready."))
+    //Ok(views.html.index("Your new application is ready."))
+    Ok(getTitleTextFromURL("http://www.cnn.com"))
   }
 
 }
