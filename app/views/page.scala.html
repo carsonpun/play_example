@@ -11,24 +11,57 @@
   <head>
   </head>
   <body>
-    <div ng-app="myApp" ng-controller="myCtrl" class="panel panel-default">
-
-      <div class="col-sm-12">Demo page using Scala Play! framework/websocket/bootstrap3/angular.js . Source code from <a href="https://github.com/carsonpun/play_example" class="btn btn-info" role="button">https://github.com/carsonpun/play_example</a> </div>
-
-      <label class="label label-primary col-sm-2">Input URL:</label>
-      <div class="col-sm-10">
-        <input title="" type="text" class="form-control" ng-model="inputURL" id="inputURL" name="inputURL" placeholder="e.g. http://www.cnn.com">
+    <div ng-app="myApp" ng-controller="myCtrl">
+      <!-- *********************************************** -->
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          Demo
+        </div>
+        <div class="panel-body">
+          Demo page using <b>Scala Play! framework</b>, <b>websocket</b>, <b>bootstrap3</b> and <b>AngularJS</b>.
+        </div>
+        <div class="panel-body">
+          Source code available at <a href="https://github.com/carsonpun/play_example" class="btn btn-info" role="button">https://github.com/carsonpun/play_example</a>
+        </div>
       </div>
-      <label class="label label-info col-sm-2">Replied URL:</label>
-      <div class="col-sm-10">
-        <input class="form-control" type="text" id="urlBox" name="urlBox" ng-model="urlBox" disabled>
+      <!-- *********************************************** -->
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          Input URL
+        </div>
+        <div class="panel-body">
+          <!--<label class="label label-primary col-sm-2">Input URL:</label>-->
+          <div class="col-sm-12">
+            <input title="" type="text" class="form-control" ng-model="inputURL" id="inputURL" name="inputURL" placeholder="e.g. http://www.cnn.com">
+          </div>
+          <!--<div class="control-group">-->
+          <div class="panel-body">
+            <button type="button" class="btn btn-primary" ng-click="sendURL()">Click to get title from "{{inputURL}}"</button>
+          </div>
+        </div>
       </div>
-      <label class="label label-info col-sm-2">Replied title:</label>
-
-      <div class="col-sm-10">
-        <input class="form-control" type="text" id="titleBox" name="titleBox" ng-model="titleBox" disabled>
+      <!-- *********************************************** -->
+      <div class="panel panel-info">
+        <div class="panel-heading">
+          Results
+        </div>
+        <div class="panel-body">
+          <table class="table">
+            <tr>
+              <td><b>Replied URL:</b></td>
+              <td>
+                <input class="form-control" type="text" id="urlBox" name="urlBox" ng-model="urlBox" disabled>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Replied title:</b></td>
+              <td>
+                <input class="form-control" type="text" id="titleBox" name="titleBox" ng-model="titleBox" disabled>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
-      <button type="button" class="btn btn-primary" ng-click="sendURL()">Click to get title from "{{inputURL}}"</button>
     </div>
   </body>
   <script>
