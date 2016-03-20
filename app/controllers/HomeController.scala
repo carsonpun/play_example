@@ -51,19 +51,23 @@ class HomeController @Inject() (implicit val mat: Materializer) extends Controll
   class MyActor(out: ActorRef) extends Actor {
     override def receive: Receive = {
       case message: JsValue => {
-        val url = (message \ "url").as[String]
-        val titleStr: String = getTitleTextFromURL(url).getOrElse("Invalid input URL!!")
+        try {
+          val url = (message \ "url").as[String]
+          val titleStr: String = getTitleTextFromURL(url).getOrElse("Invalid input URL!!")
 
-        case class Title(url: String,
-                         title: String)
-        implicit val titleWrites = new Writes[Title] {
-          def writes(title: Title) = Json.obj(
-            "url" -> title.url,
-            "title" -> title.title
-            )
+          case class Title(url: String,
+                           title: String)
+          implicit val titleWrites = new Writes[Title] {
+            def writes(title: Title) = Json.obj(
+              "url" -> title.url,
+              "title" -> title.title
+              )
+          }
+
+          out ! Json.toJson(Title(url, titleStr))
+        } catch {
+          case _ : Throwable => println(s"problem with input message = $message")
         }
-
-        out ! Json.toJson(Title(url, titleStr))
       }
 
       case _ => println("only support Json message.")
