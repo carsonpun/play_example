@@ -1,64 +1,79 @@
 @(message: String)
 <!DOCTYPE html>
 <html>
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <!-- Latest compiled JavaScript -->
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   <head>
-    <script type="text/javascript">
+  </head>
+  <body>
+    <div ng-app="myApp" ng-controller="myCtrl" class="panel panel-default">
 
-      var myWebSocket;
-      var jsondata;
-      function sendURL() {
-        var urlString = document.getElementById("inputURL").value
-        var jsontext = JSON.stringify({url: urlString})
-        myWebSocket.send(jsontext)
+      <div class="col-sm-12">Demo page using Scala Play! framework/websocket/bootstrap3/angular.js . Source code from <a href="https://github.com/carsonpun/play_example" class="btn btn-info" role="button">https://github.com/carsonpun/play_example</a> </div>
+
+      <label class="label label-primary col-sm-2">Input URL:</label>
+      <div class="col-sm-10">
+        <input title="" type="text" class="form-control" ng-model="inputURL" id="inputURL" name="inputURL" placeholder="e.g. http://www.cnn.com">
+      </div>
+      <label class="label label-info col-sm-2">Replied URL:</label>
+      <div class="col-sm-10">
+        <input class="form-control" type="text" id="urlBox" name="urlBox" ng-model="urlBox" disabled>
+      </div>
+      <label class="label label-info col-sm-2">Replied title:</label>
+
+      <div class="col-sm-10">
+        <input class="form-control" type="text" id="titleBox" name="titleBox" ng-model="titleBox" disabled>
+      </div>
+      <button type="button" class="btn btn-primary" ng-click="sendURL()">Click to get title from "{{inputURL}}"</button>
+    </div>
+  </body>
+  <script>
+    var app = angular.module('myApp', []);
+    app.controller('myCtrl', function($scope) {
+      $scope.myWebSocket = undefined
+      $scope.sendURL = function() {
+        var jsontext = JSON.stringify({url: $scope.inputURL})
+        $scope.myWebSocket.send(jsontext)
+        //console.log("jsontext: " + jsontext)
       }
-      function connectToWS() {
-        var wsEndPoint = document.getElementById("wsEndPoint").value;
-        if (myWebSocket !== undefined) {
-          myWebSocket.close()
+      $scope.websocket = function() {
+        var wsEndPoint = "ws://" + document.location.hostname + ":" + document.location.port + "/socket";
+        if ($scope.myWebSocket !== undefined) {
+          $scope.myWebSocket.close()
         }
-        myWebSocket = new WebSocket(wsEndPoint);
-        myWebSocket.onmessage = function(event) {
-          console.log("got message from websocket");
+        $scope.myWebSocket = new WebSocket(wsEndPoint);
+        $scope.myWebSocket.onmessage = function(event) {
+          //console.log("ng::got message from websocket");
           jsondata = JSON.parse(event.data);
-
           try {
             var json = JSON.parse(event.data);
-            console.log("got it");
-            console.log(json)
-            document.getElementById("urlBox").value = json["url"]
-            document.getElementById("titleBox").value = json["title"]
+            $scope.urlBox = json["url"]
+            $scope.titleBox = json["title"]
+            //console.log($scope)
+            //console.log(jsondata)
+            $scope.$apply();
           } catch (e) {
             console.log("error" + e)
           }
         };
 
-        myWebSocket.onopen = function() {
+        $scope.myWebSocket.onopen = function() {
           console.log("onopen.");
         };
 
-        myWebSocket.onclose = function(evt) {
+        $scope.myWebSocket.onclose = function(evt) {
           console.log("onclose." + evt);
         };
 
-        myWebSocket.onerror = function(evt) {
+        $scope.myWebSocket.onerror = function(evt) {
           console.log("Error!" + evt);
         };
       }
-    </script>
-  </head>
-  <body>
-    This is an example from https://github.com/carsonpun/play_example
-    <form>
-      <input title="" type="hidden" id="wsEndPoint" name="wsEndPoint" value="" class="wsEndPointBox" size="40" disabled><br>
-      <button type="button" onclick="sendURL()">get title</button>
-      <input title="" type="text" id="inputURL" name="inputURL" value="http://www.cnn.com" class="inputURL"><br>
-      reply url:   <input type="text" id="urlBox" name="urlBox" size="40" disabled><br>
-      reply title: <input type="text" id="titleBox" name="titleBox" size="40" disabled><br>
-    </form>
-  </body>
-  <script>
-    document.getElementById("wsEndPoint").value =
-      "ws://" + document.location.hostname + ":" + document.location.port + "/socket";
-    connectToWS();
+      $scope.websocket()
+    });
   </script>
 </html>
